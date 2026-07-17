@@ -1,0 +1,368 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kimberlyn's Design Library</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F9F9F8; color: #1a1a1a; }
+nav { background: #fff; border-bottom: 0.5px solid #e5e5e5; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+nav .logo { font-size: 15px; font-weight: 600; }
+nav .logo span { color: #6366f1; }
+nav a.gh { background: #1a1a1a; color: #fff; border-radius: 6px; padding: 6px 14px; font-size: 13px; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+nav a.gh:hover { background: #333; }
+.hero { padding: 48px 32px 20px; max-width: 1200px; margin: 0 auto; }
+.hero h1 { font-size: 28px; font-weight: 600; margin-bottom: 8px; }
+.hero p { font-size: 15px; color: #666; margin-bottom: 24px; }
+.toolbar { display: flex; gap: 10px; align-items: center; }
+.toolbar input { padding: 8px 14px; border: 0.5px solid #e0e0e0; border-radius: 8px; font-size: 14px; width: 260px; background: #fff; outline: none; }
+.toolbar input:focus { border-color: #6366f1; }
+.add-btn { margin-left: auto; padding: 8px 18px; background: #1a1a1a; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+.add-btn:hover { background: #333; }
+.filters { max-width: 1200px; margin: 0 auto; padding: 16px 32px 8px; }
+.filter-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 10px; }
+.filter-label { font-size: 11px; color: #999; min-width: 48px; text-transform: uppercase; letter-spacing: 0.06em; padding-top: 5px; }
+.chips { display: flex; gap: 5px; flex-wrap: wrap; }
+.chip { padding: 4px 12px; border: 0.5px solid #e0e0e0; border-radius: 20px; font-size: 12px; background: #fff; cursor: pointer; color: #555; white-space: nowrap; transition: all 0.12s; }
+.chip:hover { border-color: #6366f1; color: #6366f1; }
+.chip.on { background: #6366f1; color: #fff; border-color: #6366f1; }
+.chip-group { padding: 3px 10px; border-radius: 4px; font-size: 11px; background: #f4f4f4; color: #999; cursor: default; }
+.clear-link { font-size: 12px; color: #6366f1; background: none; border: none; cursor: pointer; padding: 4px 8px; display: none; }
+.clear-link:hover { text-decoration: underline; }
+.stats { max-width: 1200px; margin: 4px auto 0; padding: 0 32px 12px; font-size: 13px; color: #bbb; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; padding: 4px 32px 48px; }
+.card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; cursor: pointer; }
+.card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.card-img { width: 100%; height: 176px; background: #f4f4f4; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 13px; color: #bbb; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; }
+.card-body { padding: 16px; }
+.card-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+.card-desc { font-size: 13px; color: #666; line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
+.tag { padding: 3px 9px; border-radius: 20px; font-size: 11px; white-space: nowrap; }
+.ts { background: #EEF2FF; color: #4338ca; }
+.td { background: #1e1b4b; color: #a5b4fc; }
+.tm { background: #0f172a; color: #7dd3fc; }
+.tg { background: #f0f9ff; color: #0369a1; }
+.te { background: #fefce8; color: #854d0e; }
+.tl { background: #F0FDF4; color: #15803d; }
+.card-meta { display: flex; align-items: center; justify-content: space-between; }
+.stars { display: flex; gap: 2px; font-size: 13px; }
+.card-actions { display: flex; gap: 6px; }
+.btn { padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; border: 0.5px solid #e0e0e0; background: #fff; color: #555; transition: all 0.12s; }
+.btn:hover { background: #f4f4f4; }
+.btn.dark { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.btn.dark:hover { background: #333; }
+.empty { text-align: center; padding: 80px 32px; color: #bbb; max-width: 1200px; margin: 0 auto; font-size: 15px; }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+.overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 16px; padding: 28px; width: 580px; max-width: 100%; max-height: 90vh; overflow-y: auto; }
+.modal h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+.fg { margin-bottom: 14px; }
+.fg label { display: block; font-size: 13px; color: #555; margin-bottom: 5px; }
+.fg input, .fg textarea, .fg select { width: 100%; padding: 8px 12px; border: 0.5px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; background: #fff; }
+.fg input:focus, .fg textarea:focus, .fg select:focus { border-color: #6366f1; }
+.fg textarea { resize: vertical; min-height: 100px; }
+.frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mactions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+.dmodal { width: 740px; }
+.dimg { width: 100%; height: 260px; background: #f4f4f4; border-radius: 8px; margin-bottom: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 14px; }
+.dimg img { width: 100%; height: 100%; object-fit: cover; }
+.dgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.dlabel { font-size: 11px; color: #999; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+.dval { font-size: 14px; }
+.pbox { background: #f9f9f8; border: 0.5px solid #e5e5e5; border-radius: 8px; padding: 14px; font-size: 12px; color: #444; line-height: 1.6; white-space: pre-wrap; font-family: 'SF Mono', monospace; max-height: 200px; overflow-y: auto; margin-bottom: 12px; }
+.cbtn { padding: 7px 16px; background: #1a1a1a; color: #fff; border: none; border-radius: 7px; cursor: pointer; font-size: 13px; }
+.cbtn:hover { background: #333; }
+.copied { background: #16a34a !important; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Kimberlyn's <span>Design Library</span></div>
+  <a href="https://github.com/Kimberlyn-Yang/design-library" target="_blank" class="gh">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+    GitHub
+  </a>
+</nav>
+
+<div class="hero">
+  <h1>Frontend Design Library</h1>
+  <p>Collect, organize, and reuse your best UI prompts and designs.</p>
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Search by name, style, or keyword..." oninput="render()">
+    <button class="add-btn" onclick="openAdd()">+ Add Entry</button>
+  </div>
+</div>
+
+<div class="filters">
+  <div class="filter-row">
+    <span class="filter-label">Scene</span>
+    <div class="chips" id="scene-chips"></div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Style</span>
+    <div class="chips" id="style-chips"></div>
+  </div>
+  <button class="clear-link" id="clear-btn" onclick="clearAll()">Clear filters</button>
+</div>
+
+<div class="stats" id="stats"></div>
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty" style="display:none">No entries found.</div>
+
+<div class="overlay" id="add-modal">
+  <div class="modal">
+    <h2 id="mtitle">Add design entry</h2>
+    <div class="fg"><label>Title *</label><input type="text" id="f-title" placeholder="e.g. Dark particle login page"></div>
+    <div class="fg"><label>Description</label><input type="text" id="f-desc" placeholder="One-line summary"></div>
+    <div class="frow">
+      <div class="fg">
+        <label>Scene</label>
+        <select id="f-scene">
+          <option value="">Select...</option>
+          <option>Login page</option><option>Dashboard</option><option>Landing page</option>
+          <option>KOC Management</option><option>Analytics</option><option>Campaign Tracking</option>
+          <option>Commission Calculator</option><option>Outreach Templates</option><option>About page</option>
+          <option>Component</option><option>Modal</option><option>Form</option><option>Navigation</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Style</label>
+        <select id="f-style">
+          <option value="">Select...</option>
+          <optgroup label="Dark">
+            <option>Dark tech</option><option>Dark glassmorphism</option><option>Cyberpunk</option><option>Space / cosmic</option><option>Terminal / hacker</option>
+          </optgroup>
+          <optgroup label="Light">
+            <option>Clean SaaS</option><option>Minimal white</option><option>Editorial</option><option>Corporate blue</option><option>Soft pastel</option>
+          </optgroup>
+          <optgroup label="Texture">
+            <option>Glassmorphism</option><option>Neumorphism</option><option>Frosted glass</option><option>Material design</option>
+          </optgroup>
+          <optgroup label="Motion">
+            <option>Particle system</option><option>Scroll-driven</option><option>Cinematic</option><option>Interactive 3D</option>
+          </optgroup>
+          <optgroup label="Aesthetic">
+            <option>Brutalist</option><option>Retro / Y2K</option><option>Japanese minimal</option><option>Swiss grid</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Rating</label>
+        <select id="f-rating">
+          <option value="5">★★★★★ 5</option><option value="4">★★★★☆ 4</option>
+          <option value="3">★★★☆☆ 3</option><option value="2">★★☆☆☆ 2</option><option value="1">★☆☆☆☆ 1</option>
+        </select>
+      </div>
+      <div class="fg"><label>Reference website</label><input type="text" id="f-ref" placeholder="https://synex.xyz"></div>
+    </div>
+    <div class="fg"><label>Screenshot URL</label><input type="text" id="f-img" placeholder="https://..."></div>
+    <div class="fg"><label>Prompt</label><textarea id="f-prompt" placeholder="Paste your full MeDo / Claude prompt here..."></textarea></div>
+    <div class="fg"><label>GitHub file path</label><input type="text" id="f-github" placeholder="login-pages/dark-particle/prompt.md"></div>
+    <div class="mactions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn dark" onclick="saveEntry()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="detail-modal">
+  <div class="modal dmodal">
+    <div class="dimg" id="d-img"></div>
+    <h2 id="d-title" style="margin-bottom:6px"></h2>
+    <p id="d-desc" style="font-size:14px;color:#666;margin-bottom:16px"></p>
+    <div class="dgrid">
+      <div><div class="dlabel">Scene</div><div class="dval" id="d-scene"></div></div>
+      <div><div class="dlabel">Style</div><div class="dval" id="d-style"></div></div>
+      <div><div class="dlabel">Rating</div><div class="dval" id="d-rating"></div></div>
+      <div><div class="dlabel">Reference</div><div class="dval" id="d-ref"></div></div>
+    </div>
+    <div class="dlabel" style="margin-bottom:8px">Prompt</div>
+    <div class="pbox" id="d-prompt"></div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="cbtn" id="copy-btn" onclick="copyPrompt()">Copy prompt</button>
+      <button class="cbtn" id="gh-btn" style="background:#24292f;display:none" onclick="openGithub()">View on GitHub</button>
+      <button class="btn" onclick="editFromDetail()" style="margin-left:auto">Edit</button>
+      <button class="btn" onclick="deleteEntry()" style="color:#dc2626;border-color:#fecaca">Delete</button>
+      <button class="btn" onclick="closeDetail()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const GH = 'https://github.com/Kimberlyn-Yang/design-library/blob/main';
+let DB = JSON.parse(localStorage.getItem('dlv3') || 'null') || seed();
+let AS = new Set(), AY = new Set();
+let CID = null, EID = null;
+
+function seed() {
+  return [
+    {id:'1',title:'KOCBridge login landing page',desc:'Cinematic SaaS landing page inspired by Synex.xyz — editorial typography, floating glassmorphism cards, scroll animations.',scene:'Login page',style:'Clean SaaS',ref:'https://synex.xyz',img:'',prompt:'Completely redesign the login page into a stunning long-scroll landing page with login form, inspired by premium Chinese SaaS product pages. Light blue and white color scheme, 3D illustrations, glassmorphism cards, smooth scrolling.',github:'login-pages/synex-style/prompt.md',rating:5,createdAt:Date.now()},
+    {id:'2',title:'Dark particle login',desc:'Full-screen particle system background with glassmorphism login card. Cinematic space-tech aesthetic.',scene:'Login page',style:'Particle system',ref:'',img:'',prompt:'Redesign the login page to match a dark, premium, space-tech aesthetic. Full dark background (#050810), animated particle system with blue/cyan glowing dots and connection lines, mouse interaction.',github:'login-pages/dark-particle/prompt.md',rating:4,createdAt:Date.now()-1000}
+  ];
+}
+
+function save() { localStorage.setItem('dlv3', JSON.stringify(DB)); }
+
+function tagClass(style) {
+  const dark = ['Dark tech','Dark glassmorphism','Cyberpunk','Space / cosmic','Terminal / hacker'];
+  const motion = ['Particle system','Scroll-driven','Cinematic','Interactive 3D'];
+  const glass = ['Glassmorphism','Frosted glass','Neumorphism'];
+  const edit = ['Editorial','Brutalist','Swiss grid','Japanese minimal','Retro / Y2K'];
+  if (dark.includes(style)) return 'tag td';
+  if (motion.includes(style)) return 'tag tm';
+  if (glass.includes(style)) return 'tag tg';
+  if (edit.includes(style)) return 'tag te';
+  return 'tag tl';
+}
+
+function stars(n) { return Array.from({length:5},(_,i)=>`<span style="color:${i<n?'#f59e0b':'#e5e7eb'}">★</span>`).join(''); }
+
+function buildFilters() {
+  const scenes = [...new Set(DB.map(e=>e.scene).filter(Boolean))];
+  const styles = [...new Set(DB.map(e=>e.style).filter(Boolean))];
+  document.getElementById('scene-chips').innerHTML = scenes.map(s=>`<button class="chip${AS.has(s)?' on':''}" onclick="tog('s','${s}')">${s}</button>`).join('');
+  document.getElementById('style-chips').innerHTML = styles.map(s=>`<button class="chip${AY.has(s)?' on':''}" onclick="tog('y','${s}')">${s}</button>`).join('');
+  document.getElementById('clear-btn').style.display = (AS.size||AY.size)?'inline':'none';
+}
+
+function tog(type, val) {
+  const set = type==='s'?AS:AY;
+  set.has(val)?set.delete(val):set.add(val);
+  render();
+}
+
+function clearAll() { AS.clear(); AY.clear(); render(); }
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const filtered = DB.filter(e => {
+    const mq = !q || [e.title,e.desc,e.scene,e.style,e.prompt].join(' ').toLowerCase().includes(q);
+    const ms = !AS.size || AS.has(e.scene);
+    const my = !AY.size || AY.has(e.style);
+    return mq && ms && my;
+  });
+  buildFilters();
+  document.getElementById('stats').textContent = `${filtered.length} of ${DB.length} entries`;
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+  if (!filtered.length) { grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  grid.innerHTML = filtered.map(e=>`
+    <div class="card" onclick="openDetail('${e.id}')">
+      <div class="card-img">${e.img?`<img src="${e.img}" alt="" onerror="this.parentElement.textContent='No screenshot'">`:'No screenshot'}</div>
+      <div class="card-body">
+        <div class="card-title">${e.title}</div>
+        <div class="card-desc">${e.desc||'No description'}</div>
+        <div class="card-tags">
+          ${e.scene?`<span class="tag ts">${e.scene}</span>`:''}
+          ${e.style?`<span class="${tagClass(e.style)}">${e.style}</span>`:''}
+        </div>
+        <div class="card-meta">
+          <div class="stars">${stars(e.rating||0)}</div>
+          <div class="card-actions">
+            <button class="btn" onclick="event.stopPropagation();openEdit('${e.id}')">Edit</button>
+            <button class="btn dark" onclick="event.stopPropagation();openDetail('${e.id}')">View</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function resetForm() {
+  ['title','desc','ref','img','prompt','github'].forEach(f=>document.getElementById('f-'+f).value='');
+  document.getElementById('f-scene').value='';
+  document.getElementById('f-style').value='';
+  document.getElementById('f-rating').value='5';
+}
+
+function openAdd() { EID=null; document.getElementById('mtitle').textContent='Add entry'; resetForm(); document.getElementById('add-modal').classList.add('open'); }
+
+function openEdit(id) {
+  const e=DB.find(x=>x.id===id); if(!e)return;
+  EID=id;
+  document.getElementById('mtitle').textContent='Edit entry';
+  document.getElementById('f-title').value=e.title||'';
+  document.getElementById('f-desc').value=e.desc||'';
+  document.getElementById('f-scene').value=e.scene||'';
+  document.getElementById('f-style').value=e.style||'';
+  document.getElementById('f-ref').value=e.ref||'';
+  document.getElementById('f-img').value=e.img||'';
+  document.getElementById('f-prompt').value=e.prompt||'';
+  document.getElementById('f-github').value=e.github||'';
+  document.getElementById('f-rating').value=e.rating||5;
+  document.getElementById('add-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('add-modal').classList.remove('open'); }
+
+function saveEntry() {
+  const title=document.getElementById('f-title').value.trim();
+  if(!title){alert('Title is required.');return;}
+  const entry={
+    id:EID||Date.now().toString(),
+    title,desc:document.getElementById('f-desc').value.trim(),
+    scene:document.getElementById('f-scene').value,
+    style:document.getElementById('f-style').value,
+    ref:document.getElementById('f-ref').value.trim(),
+    img:document.getElementById('f-img').value.trim(),
+    prompt:document.getElementById('f-prompt').value.trim(),
+    github:document.getElementById('f-github').value.trim(),
+    rating:parseInt(document.getElementById('f-rating').value),
+    createdAt:EID?(DB.find(e=>e.id===EID)?.createdAt||Date.now()):Date.now()
+  };
+  if(EID){DB=DB.map(e=>e.id===EID?entry:e);}else{DB.unshift(entry);}
+  save();closeModal();render();
+}
+
+function openDetail(id) {
+  const e=DB.find(x=>x.id===id); if(!e)return;
+  CID=id;
+  document.getElementById('d-title').textContent=e.title;
+  document.getElementById('d-desc').textContent=e.desc||'';
+  document.getElementById('d-scene').textContent=e.scene||'—';
+  document.getElementById('d-style').textContent=e.style||'—';
+  document.getElementById('d-rating').innerHTML=stars(e.rating||0);
+  document.getElementById('d-ref').innerHTML=e.ref?`<a href="${e.ref}" target="_blank" style="color:#6366f1">${e.ref}</a>`:'—';
+  document.getElementById('d-prompt').textContent=e.prompt||'No prompt saved.';
+  document.getElementById('d-img').innerHTML=e.img?`<img src="${e.img}" alt="">`:'No screenshot';
+  document.getElementById('gh-btn').style.display=e.github?'inline-block':'none';
+  const cb=document.getElementById('copy-btn');
+  cb.textContent='Copy prompt';cb.classList.remove('copied');
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+function closeDetail(){document.getElementById('detail-modal').classList.remove('open');CID=null;}
+function editFromDetail(){const id=CID;closeDetail();if(id)setTimeout(()=>openEdit(id),80);}
+
+function copyPrompt(){
+  const e=DB.find(x=>x.id===CID);if(!e)return;
+  navigator.clipboard.writeText(e.prompt||'').then(()=>{
+    const b=document.getElementById('copy-btn');
+    b.textContent='Copied!';b.classList.add('copied');
+    setTimeout(()=>{b.textContent='Copy prompt';b.classList.remove('copied');},2000);
+  });
+}
+
+function openGithub(){
+  const e=DB.find(x=>x.id===CID);
+  if(e?.github)window.open(`${GH}/${e.github}`,'_blank');
+}
+
+function deleteEntry(){
+  if(!CID||!confirm('Delete this entry?'))return;
+  DB=DB.filter(e=>e.id!==CID);
+  save();closeDetail();render();
+}
+
+document.getElementById('add-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+document.getElementById('detail-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDetail();});
+render();
+</script>
+</body>
+</html>
