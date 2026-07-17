@@ -13,6 +13,9 @@ nav .logo { font-size: 15px; font-weight: 600; }
 nav .logo span { color: #6366f1; }
 nav a.gh { background: #1a1a1a; color: #fff; border-radius: 6px; padding: 6px 14px; font-size: 13px; display: flex; align-items: center; gap: 6px; text-decoration: none; }
 nav a.gh:hover { background: #333; }
+.sync-bar { background: #fffbeb; border-bottom: 0.5px solid #fde68a; padding: 10px 32px; display: flex; align-items: center; gap: 12px; font-size: 13px; color: #92400e; }
+.sync-bar.ok { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+.sync-bar.err { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
 .hero { padding: 48px 32px 20px; max-width: 1200px; margin: 0 auto; }
 .hero h1 { font-size: 28px; font-weight: 600; margin-bottom: 8px; }
 .hero p { font-size: 15px; color: #666; margin-bottom: 24px; }
@@ -28,10 +31,11 @@ nav a.gh:hover { background: #333; }
 .chip { padding: 4px 12px; border: 0.5px solid #e0e0e0; border-radius: 20px; font-size: 12px; background: #fff; cursor: pointer; color: #555; white-space: nowrap; transition: all 0.12s; }
 .chip:hover { border-color: #6366f1; color: #6366f1; }
 .chip.on { background: #6366f1; color: #fff; border-color: #6366f1; }
-.chip-group { padding: 3px 10px; border-radius: 4px; font-size: 11px; background: #f4f4f4; color: #999; cursor: default; }
 .clear-link { font-size: 12px; color: #6366f1; background: none; border: none; cursor: pointer; padding: 4px 8px; display: none; }
 .clear-link:hover { text-decoration: underline; }
-.stats { max-width: 1200px; margin: 4px auto 0; padding: 0 32px 12px; font-size: 13px; color: #bbb; }
+.stats { max-width: 1200px; margin: 4px auto 0; padding: 0 32px 12px; font-size: 13px; color: #bbb; display: flex; align-items: center; gap: 12px; }
+.refresh-btn { font-size: 12px; color: #6366f1; background: none; border: none; cursor: pointer; padding: 2px 8px; border: 0.5px solid #c7d2fe; border-radius: 6px; }
+.refresh-btn:hover { background: #eef2ff; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; padding: 4px 32px 48px; }
 .card { background: #fff; border: 0.5px solid #e5e5e5; border-radius: 12px; overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; cursor: pointer; }
 .card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
@@ -77,6 +81,7 @@ nav a.gh:hover { background: #333; }
 .cbtn { padding: 7px 16px; background: #1a1a1a; color: #fff; border: none; border-radius: 7px; cursor: pointer; font-size: 13px; }
 .cbtn:hover { background: #333; }
 .copied { background: #16a34a !important; }
+.step-pill { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #6366f1; color: #fff; font-size: 11px; font-weight: 600; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -88,6 +93,8 @@ nav a.gh:hover { background: #333; }
     GitHub
   </a>
 </nav>
+
+<div id="sync-bar" class="sync-bar" style="display:none"></div>
 
 <div class="hero">
   <h1>Frontend Design Library</h1>
@@ -110,10 +117,14 @@ nav a.gh:hover { background: #333; }
   <button class="clear-link" id="clear-btn" onclick="clearAll()">Clear filters</button>
 </div>
 
-<div class="stats" id="stats"></div>
+<div class="stats" id="stats">
+  <span id="stats-text"></span>
+  <button class="refresh-btn" onclick="loadFromGitHub()">↻ Refresh from GitHub</button>
+</div>
 <div class="grid" id="grid"></div>
 <div class="empty" id="empty" style="display:none">No entries found.</div>
 
+<!-- Add/Edit Modal -->
 <div class="overlay" id="add-modal">
   <div class="modal">
     <h2 id="mtitle">Add design entry</h2>
@@ -163,40 +174,56 @@ nav a.gh:hover { background: #333; }
     </div>
     <div class="fg"><label>Screenshot URL</label><input type="text" id="f-img" placeholder="https://..."></div>
     <div class="fg"><label>Prompt</label><textarea id="f-prompt" placeholder="Paste your full MeDo / Claude prompt here..."></textarea></div>
-    <div class="fg"><label>GitHub file path</label><input type="text" id="f-github" placeholder="login-pages/dark-particle/prompt.md"></div>
     <div class="mactions">
       <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn dark" onclick="saveEntry()">Save</button>
+      <button class="btn dark" onclick="saveEntry()">Save & Sync</button>
     </div>
   </div>
 </div>
 
+<!-- Sync Modal -->
 <div class="overlay" id="sync-modal">
-  <div class="modal" style="width:580px">
+  <div class="modal" style="width:620px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-      <span style="font-size:20px">🔄</span>
+      <span style="font-size:22px">🔄</span>
       <h2 style="margin:0">Sync to GitHub</h2>
     </div>
-    <p style="font-size:13px;color:#666;margin-bottom:20px">Entry saved locally. Now save it to GitHub so you never lose it.</p>
-    <div style="background:#f4f4f4;border-radius:8px;padding:12px 14px;margin-bottom:16px">
-      <div style="font-size:11px;color:#999;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">Save to this path in your repo</div>
-      <div style="font-size:13px;font-family:'SF Mono',monospace;color:#1a1a1a" id="sync-path"></div>
-    </div>
-    <div style="font-size:12px;color:#555;margin-bottom:8px;font-weight:500">Markdown content to paste:</div>
-    <div id="sync-content" style="background:#f9f9f8;border:0.5px solid #e5e5e5;border-radius:8px;padding:14px;font-size:12px;color:#444;line-height:1.6;white-space:pre-wrap;font-family:'SF Mono',monospace;max-height:180px;overflow-y:auto;margin-bottom:14px"></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="cbtn" id="sync-copy-btn" onclick="copySyncContent()">Copy markdown</button>
-      <button class="cbtn" style="background:#24292f" onclick="openGithubNew()">Open GitHub →</button>
-      <button class="btn" onclick="closeSyncModal()" style="margin-left:auto">Done</button>
-    </div>
-    <div style="margin-top:14px;padding:12px;background:#fffbeb;border-radius:8px;border:0.5px solid #fde68a">
-      <div style="font-size:12px;color:#92400e;line-height:1.6">
-        <strong>Steps:</strong> Click "Copy markdown" → Click "Open GitHub →" → Paste into the file editor → Commit changes
+    <p style="font-size:13px;color:#666;margin-bottom:20px">Entry saved locally. Follow these steps to sync so everyone sees your update.</p>
+
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span class="step-pill">1</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;margin-bottom:6px">Copy the updated data.json</div>
+          <div id="sync-content" style="background:#f9f9f8;border:0.5px solid #e5e5e5;border-radius:8px;padding:12px;font-size:11px;color:#444;line-height:1.5;white-space:pre-wrap;font-family:'SF Mono',monospace;max-height:120px;overflow-y:auto;margin-bottom:8px"></div>
+          <button class="cbtn" id="sync-copy-btn" onclick="copySyncContent()">Copy data.json</button>
+        </div>
       </div>
+
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span class="step-pill">2</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;margin-bottom:6px">Open data.json in GitHub and paste</div>
+          <button class="cbtn" style="background:#24292f" onclick="openDataJson()">Open data.json on GitHub →</button>
+          <div style="font-size:12px;color:#888;margin-top:6px">Click ✏️ edit → select all → paste → Commit changes</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span class="step-pill">3</span>
+        <div>
+          <div style="font-size:13px;font-weight:500">Done — everyone sees your update within 1 minute</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end">
+      <button class="btn" onclick="closeSyncModal()">Close</button>
     </div>
   </div>
 </div>
 
+<!-- Detail Modal -->
 <div class="overlay" id="detail-modal">
   <div class="modal dmodal">
     <div class="dimg" id="d-img"></div>
@@ -212,7 +239,6 @@ nav a.gh:hover { background: #333; }
     <div class="pbox" id="d-prompt"></div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <button class="cbtn" id="copy-btn" onclick="copyPrompt()">Copy prompt</button>
-      <button class="cbtn" id="gh-btn" style="background:#24292f;display:none" onclick="openGithub()">View on GitHub</button>
       <button class="btn" onclick="editFromDetail()" style="margin-left:auto">Edit</button>
       <button class="btn" onclick="deleteEntry()" style="color:#dc2626;border-color:#fecaca">Delete</button>
       <button class="btn" onclick="closeDetail()">Close</button>
@@ -221,19 +247,60 @@ nav a.gh:hover { background: #333; }
 </div>
 
 <script>
-const GH = 'https://github.com/Kimberlyn-Yang/design-library/blob/main';
-let DB = JSON.parse(localStorage.getItem('dlv3') || 'null') || seed();
+const OWNER = 'Kimberlyn-Yang';
+const REPO = 'design-library';
+const DATA_FILE = 'data.json';
+const RAW_URL = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${DATA_FILE}`;
+const GITHUB_FILE_URL = `https://github.com/${OWNER}/${REPO}/blob/main/${DATA_FILE}`;
+
+let DB = [];
 let AS = new Set(), AY = new Set();
 let CID = null, EID = null;
 
-function seed() {
+function defaultData() {
   return [
-    {id:'1',title:'KOCBridge login landing page',desc:'Cinematic SaaS landing page inspired by Synex.xyz — editorial typography, floating glassmorphism cards, scroll animations.',scene:'Login page',style:'Clean SaaS',ref:'https://synex.xyz',img:'',prompt:'Completely redesign the login page into a stunning long-scroll landing page with login form, inspired by premium Chinese SaaS product pages. Light blue and white color scheme, 3D illustrations, glassmorphism cards, smooth scrolling.',github:'login-pages/synex-style/prompt.md',rating:5,createdAt:Date.now()},
-    {id:'2',title:'Dark particle login',desc:'Full-screen particle system background with glassmorphism login card. Cinematic space-tech aesthetic.',scene:'Login page',style:'Particle system',ref:'',img:'',prompt:'Redesign the login page to match a dark, premium, space-tech aesthetic. Full dark background (#050810), animated particle system with blue/cyan glowing dots and connection lines, mouse interaction.',github:'login-pages/dark-particle/prompt.md',rating:4,createdAt:Date.now()-1000}
+    {id:'1',title:'KOCBridge login landing page',desc:'Cinematic SaaS landing page inspired by Synex.xyz — editorial typography, floating glassmorphism cards, scroll animations.',scene:'Login page',style:'Clean SaaS',ref:'https://synex.xyz',img:'',prompt:'Completely redesign the login page into a stunning long-scroll landing page with login form, inspired by premium Chinese SaaS product pages. Light blue and white color scheme, 3D illustrations, glassmorphism cards, smooth scrolling.',rating:5,createdAt:Date.now()},
+    {id:'2',title:'Dark particle login',desc:'Full-screen particle system background with glassmorphism login card. Cinematic space-tech aesthetic.',scene:'Login page',style:'Particle system',ref:'',img:'',prompt:'Redesign the login page to match a dark, premium, space-tech aesthetic. Full dark background (#050810), animated particle system with blue/cyan glowing dots and connection lines, mouse interaction.',rating:4,createdAt:Date.now()-1000}
   ];
 }
 
-function save() { localStorage.setItem('dlv3', JSON.stringify(DB)); }
+async function loadFromGitHub() {
+  showBar('loading', '↻ Loading from GitHub...');
+  try {
+    const res = await fetch(RAW_URL + '?t=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        DB = data;
+        localStorage.setItem('dlv4', JSON.stringify(DB));
+        showBar('ok', `✓ Loaded ${DB.length} entries from GitHub`);
+        render();
+        return;
+      }
+    }
+    throw new Error('not found');
+  } catch(e) {
+    const local = localStorage.getItem('dlv4');
+    if (local) {
+      DB = JSON.parse(local);
+      showBar('warn', '⚠ Could not reach GitHub — showing local data. Click "Refresh" to retry.');
+    } else {
+      DB = defaultData();
+      showBar('warn', '⚠ No GitHub data found — showing defaults. Add entries and sync to GitHub.');
+    }
+    render();
+  }
+}
+
+function showBar(type, msg) {
+  const bar = document.getElementById('sync-bar');
+  bar.style.display = 'flex';
+  bar.className = 'sync-bar' + (type==='ok'?' ok':type==='err'?' err':'');
+  bar.textContent = msg;
+  if (type === 'ok') setTimeout(()=>{ bar.style.display='none'; }, 3000);
+}
+
+function saveLocal() { localStorage.setItem('dlv4', JSON.stringify(DB)); }
 
 function tagClass(style) {
   const dark = ['Dark tech','Dark glassmorphism','Cyberpunk','Space / cosmic','Terminal / hacker'];
@@ -257,24 +324,17 @@ function buildFilters() {
   document.getElementById('clear-btn').style.display = (AS.size||AY.size)?'inline':'none';
 }
 
-function tog(type, val) {
-  const set = type==='s'?AS:AY;
-  set.has(val)?set.delete(val):set.add(val);
-  render();
-}
-
+function tog(type, val) { const s=type==='s'?AS:AY; s.has(val)?s.delete(val):s.add(val); render(); }
 function clearAll() { AS.clear(); AY.clear(); render(); }
 
 function render() {
   const q = document.getElementById('search').value.toLowerCase();
   const filtered = DB.filter(e => {
     const mq = !q || [e.title,e.desc,e.scene,e.style,e.prompt].join(' ').toLowerCase().includes(q);
-    const ms = !AS.size || AS.has(e.scene);
-    const my = !AY.size || AY.has(e.style);
-    return mq && ms && my;
+    return mq && (!AS.size||AS.has(e.scene)) && (!AY.size||AY.has(e.style));
   });
   buildFilters();
-  document.getElementById('stats').textContent = `${filtered.length} of ${DB.length} entries`;
+  document.getElementById('stats-text').textContent = `${filtered.length} of ${DB.length} entries`;
   const grid = document.getElementById('grid');
   const empty = document.getElementById('empty');
   if (!filtered.length) { grid.innerHTML=''; empty.style.display='block'; return; }
@@ -301,7 +361,7 @@ function render() {
 }
 
 function resetForm() {
-  ['title','desc','ref','img','prompt','github'].forEach(f=>document.getElementById('f-'+f).value='');
+  ['title','desc','ref','img','prompt'].forEach(f=>document.getElementById('f-'+f).value='');
   document.getElementById('f-scene').value='';
   document.getElementById('f-style').value='';
   document.getElementById('f-rating').value='5';
@@ -320,7 +380,6 @@ function openEdit(id) {
   document.getElementById('f-ref').value=e.ref||'';
   document.getElementById('f-img').value=e.img||'';
   document.getElementById('f-prompt').value=e.prompt||'';
-  document.getElementById('f-github').value=e.github||'';
   document.getElementById('f-rating').value=e.rating||5;
   document.getElementById('add-modal').classList.add('open');
 }
@@ -332,76 +391,40 @@ function saveEntry() {
   if(!title){alert('Title is required.');return;}
   const entry={
     id:EID||Date.now().toString(),
-    title,desc:document.getElementById('f-desc').value.trim(),
+    title,
+    desc:document.getElementById('f-desc').value.trim(),
     scene:document.getElementById('f-scene').value,
     style:document.getElementById('f-style').value,
     ref:document.getElementById('f-ref').value.trim(),
     img:document.getElementById('f-img').value.trim(),
     prompt:document.getElementById('f-prompt').value.trim(),
-    github:document.getElementById('f-github').value.trim(),
     rating:parseInt(document.getElementById('f-rating').value),
     createdAt:EID?(DB.find(e=>e.id===EID)?.createdAt||Date.now()):Date.now()
   };
   if(EID){DB=DB.map(e=>e.id===EID?entry:e);}else{DB.unshift(entry);}
-  save();closeModal();render();
-  showSync(entry);
+  saveLocal();closeModal();render();
+  showSyncModal();
 }
 
-function slugify(str) { return str.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
-
-function showSync(entry) {
-  const scene = slugify(entry.scene||'other');
-  const title = slugify(entry.title||'untitled');
-  const path = `${scene}/${title}/prompt.md`;
-  const stars = '★'.repeat(entry.rating||0)+'☆'.repeat(5-(entry.rating||0));
-  const md = `# ${entry.title}
-
-## Scene
-${entry.scene||'—'}
-
-## Style
-${entry.style||'—'}
-
-## Rating
-${stars} (${entry.rating||0}/5)
-
-## Description
-${entry.desc||'—'}
-
-## Reference
-${entry.ref||'—'}
-
-## Screenshot
-${entry.img||'—'}
-
-## Prompt
-\`\`\`
-${entry.prompt||'—'}
-\`\`\`
-
-## Notes
-Added: ${new Date().toLocaleDateString()}
-`;
-  document.getElementById('sync-path').textContent = path;
-  document.getElementById('sync-content').textContent = md;
+function showSyncModal() {
+  const json = JSON.stringify(DB, null, 2);
+  document.getElementById('sync-content').textContent = json;
+  document.getElementById('sync-copy-btn').textContent='Copy data.json';
+  document.getElementById('sync-copy-btn').classList.remove('copied');
   document.getElementById('sync-modal').classList.add('open');
 }
 
 function closeSyncModal() { document.getElementById('sync-modal').classList.remove('open'); }
 
 function copySyncContent() {
-  const text = document.getElementById('sync-content').textContent;
-  navigator.clipboard.writeText(text).then(()=>{
+  navigator.clipboard.writeText(document.getElementById('sync-content').textContent).then(()=>{
     const b=document.getElementById('sync-copy-btn');
     b.textContent='Copied!';b.classList.add('copied');
-    setTimeout(()=>{b.textContent='Copy markdown';b.classList.remove('copied');},2000);
+    setTimeout(()=>{b.textContent='Copy data.json';b.classList.remove('copied');},2000);
   });
 }
 
-function openGithubNew() {
-  const path = document.getElementById('sync-path').textContent;
-  window.open(`https://github.com/Kimberlyn-Yang/design-library/new/main?filename=${encodeURIComponent(path)}`,'_blank');
-}
+function openDataJson() { window.open(GITHUB_FILE_URL,'_blank'); }
 
 function openDetail(id) {
   const e=DB.find(x=>x.id===id); if(!e)return;
@@ -414,9 +437,8 @@ function openDetail(id) {
   document.getElementById('d-ref').innerHTML=e.ref?`<a href="${e.ref}" target="_blank" style="color:#6366f1">${e.ref}</a>`:'—';
   document.getElementById('d-prompt').textContent=e.prompt||'No prompt saved.';
   document.getElementById('d-img').innerHTML=e.img?`<img src="${e.img}" alt="">`:'No screenshot';
-  document.getElementById('gh-btn').style.display=e.github?'inline-block':'none';
-  const cb=document.getElementById('copy-btn');
-  cb.textContent='Copy prompt';cb.classList.remove('copied');
+  document.getElementById('copy-btn').textContent='Copy prompt';
+  document.getElementById('copy-btn').classList.remove('copied');
   document.getElementById('detail-modal').classList.add('open');
 }
 
@@ -432,21 +454,18 @@ function copyPrompt(){
   });
 }
 
-function openGithub(){
-  const e=DB.find(x=>x.id===CID);
-  if(e?.github)window.open(`${GH}/${e.github}`,'_blank');
-}
-
 function deleteEntry(){
   if(!CID||!confirm('Delete this entry?'))return;
   DB=DB.filter(e=>e.id!==CID);
-  save();closeDetail();render();
+  saveLocal();closeDetail();render();
+  showSyncModal();
 }
 
 document.getElementById('add-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 document.getElementById('detail-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDetail();});
 document.getElementById('sync-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeSyncModal();});
-render();
+
+loadFromGitHub();
 </script>
 </body>
 </html>
