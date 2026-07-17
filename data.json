@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "id": "1784301042063",
+    "title": "Green Simple",
+    "desc": "",
+    "scene": "Login page",
+    "style": "Clean SaaS",
+    "ref": "",
+    "img": "",
+    "prompt": "",
+    "rating": 5,
+    "createdAt": 1784301042063
+  },
+  {
+    "id": "1",
+    "title": "KOCBridge login landing page",
+    "desc": "Cinematic SaaS landing page inspired by Synex.xyz — editorial typography, floating glassmorphism cards, scroll animations.",
+    "scene": "Login page",
+    "style": "Clean SaaS",
+    "ref": "https://synex.xyz",
+    "img": "",
+    "prompt": "Completely redesign the login page into a stunning long-scroll landing page with login form, inspired by premium Chinese SaaS product pages. Light blue and white color scheme, 3D illustrations, glassmorphism cards, smooth scrolling.",
+    "rating": 5,
+    "createdAt": 1784301004793
+  },
+  {
+    "id": "2",
+    "title": "Dark particle login",
+    "desc": "Full-screen particle system background with glassmorphism login card. Cinematic space-tech aesthetic.",
+    "scene": "Login page",
+    "style": "Particle system",
+    "ref": "",
+    "img": "",
+    "prompt": "Redesign the login page to match a dark, premium, space-tech aesthetic. Full dark background (#050810), animated particle system with blue/cyan glowing dots and connection lines, mouse interaction.",
+    "rating": 4,
+    "createdAt": 1784301003793
+  }
+]
