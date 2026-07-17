@@ -171,6 +171,32 @@ nav a.gh:hover { background: #333; }
   </div>
 </div>
 
+<div class="overlay" id="sync-modal">
+  <div class="modal" style="width:580px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <span style="font-size:20px">🔄</span>
+      <h2 style="margin:0">Sync to GitHub</h2>
+    </div>
+    <p style="font-size:13px;color:#666;margin-bottom:20px">Entry saved locally. Now save it to GitHub so you never lose it.</p>
+    <div style="background:#f4f4f4;border-radius:8px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:11px;color:#999;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">Save to this path in your repo</div>
+      <div style="font-size:13px;font-family:'SF Mono',monospace;color:#1a1a1a" id="sync-path"></div>
+    </div>
+    <div style="font-size:12px;color:#555;margin-bottom:8px;font-weight:500">Markdown content to paste:</div>
+    <div id="sync-content" style="background:#f9f9f8;border:0.5px solid #e5e5e5;border-radius:8px;padding:14px;font-size:12px;color:#444;line-height:1.6;white-space:pre-wrap;font-family:'SF Mono',monospace;max-height:180px;overflow-y:auto;margin-bottom:14px"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="cbtn" id="sync-copy-btn" onclick="copySyncContent()">Copy markdown</button>
+      <button class="cbtn" style="background:#24292f" onclick="openGithubNew()">Open GitHub →</button>
+      <button class="btn" onclick="closeSyncModal()" style="margin-left:auto">Done</button>
+    </div>
+    <div style="margin-top:14px;padding:12px;background:#fffbeb;border-radius:8px;border:0.5px solid #fde68a">
+      <div style="font-size:12px;color:#92400e;line-height:1.6">
+        <strong>Steps:</strong> Click "Copy markdown" → Click "Open GitHub →" → Paste into the file editor → Commit changes
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="detail-modal">
   <div class="modal dmodal">
     <div class="dimg" id="d-img"></div>
@@ -318,6 +344,63 @@ function saveEntry() {
   };
   if(EID){DB=DB.map(e=>e.id===EID?entry:e);}else{DB.unshift(entry);}
   save();closeModal();render();
+  showSync(entry);
+}
+
+function slugify(str) { return str.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+
+function showSync(entry) {
+  const scene = slugify(entry.scene||'other');
+  const title = slugify(entry.title||'untitled');
+  const path = `${scene}/${title}/prompt.md`;
+  const stars = '★'.repeat(entry.rating||0)+'☆'.repeat(5-(entry.rating||0));
+  const md = `# ${entry.title}
+
+## Scene
+${entry.scene||'—'}
+
+## Style
+${entry.style||'—'}
+
+## Rating
+${stars} (${entry.rating||0}/5)
+
+## Description
+${entry.desc||'—'}
+
+## Reference
+${entry.ref||'—'}
+
+## Screenshot
+${entry.img||'—'}
+
+## Prompt
+\`\`\`
+${entry.prompt||'—'}
+\`\`\`
+
+## Notes
+Added: ${new Date().toLocaleDateString()}
+`;
+  document.getElementById('sync-path').textContent = path;
+  document.getElementById('sync-content').textContent = md;
+  document.getElementById('sync-modal').classList.add('open');
+}
+
+function closeSyncModal() { document.getElementById('sync-modal').classList.remove('open'); }
+
+function copySyncContent() {
+  const text = document.getElementById('sync-content').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const b=document.getElementById('sync-copy-btn');
+    b.textContent='Copied!';b.classList.add('copied');
+    setTimeout(()=>{b.textContent='Copy markdown';b.classList.remove('copied');},2000);
+  });
+}
+
+function openGithubNew() {
+  const path = document.getElementById('sync-path').textContent;
+  window.open(`https://github.com/Kimberlyn-Yang/design-library/new/main?filename=${encodeURIComponent(path)}`,'_blank');
 }
 
 function openDetail(id) {
@@ -362,6 +445,7 @@ function deleteEntry(){
 
 document.getElementById('add-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 document.getElementById('detail-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDetail();});
+document.getElementById('sync-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeSyncModal();});
 render();
 </script>
 </body>
